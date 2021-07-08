@@ -153,6 +153,13 @@ target_link_libraries(${PROJECT_NAME}_node
 #  ${PCL_LIBRARIES}
 )
 
+
+add_executable(${PROJECT_NAME}_cluster_node src/publish_cluster_node.cpp src/cluster_extraction.cpp)
+target_link_libraries(${PROJECT_NAME}_cluster_node
+  ${catkin_LIBRARIES}
+#  ${PCL_LIBRARIES}
+)
+
 #############
 ## Install ##
 #############
