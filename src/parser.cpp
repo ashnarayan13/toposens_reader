@@ -21,8 +21,8 @@ namespace topo
   }
 
   bool UssParser::readAndPublishFrame()
-  { 
-    _scan.clear();
+  {
+    _currScan.clear();
 
     std::string frame;
     frame.clear();
@@ -77,25 +77,29 @@ namespace topo
 
       try
       {
-        toposens_task::TPoint pt;
-        pt.location.x = _toNum(++i) / 1000.0;
+        pcl::PointXYZI pcl_point;
+        pcl_point.x = _toNum(++i) / 1000.0;
 
         if (*(++i) == 'Y')
-          pt.location.y = _toNum(++i) / 1000.0;
+          pcl_point.y = _toNum(++i) / 1000.0;
         else
           throw std::invalid_argument("Expected Y-tag not found");
 
         if (*(++i) == 'Z')
-          pt.location.z = _toNum(++i) / 1000.0;
+          pcl_point.z = _toNum(++i) / 1000.0;
         else
           throw std::invalid_argument("Expected Z-tag not found");
 
         if (*(++i) == 'V')
-          pt.intensity = _toNum(++i) / 100.0;
+          pcl_point.intensity = _toNum(++i) / 100.0;
         else
           throw std::invalid_argument("Expected V-tag not found");
 
-        if (pt.intensity > 0) _scan.push_back(pt);
+        if (pcl_point.intensity > 0)
+        {
+          // Conversion to correct coordinate frame
+          _currScan.points.push_back(getConvertedPoint(pcl_point));
+        } 
       }
       catch (const std::exception &e)
       {
@@ -128,9 +132,26 @@ namespace topo
     return (float)(factor * abs);
   }
 
+  pcl::PointXYZI UssParser::getConvertedPoint(const pcl::PointXYZI& currPoint)
+  {
+    pcl::PointXYZI pcl_point;
+    pcl_point.x = currPoint.z;
+    pcl_point.y = -currPoint.x;
+    pcl_point.z = -currPoint.y;
+    pcl_point.intensity = currPoint.intensity;
+
+    return pcl_point;
+  }
+
   void UssParser::publishPcl()
   {
     sensor_msgs::PointCloud2 pclMsg;
+
+    _currScan.header.stamp = pcl_conversions::toPCL(ros::Time::now());
+    _currScan.header.seq = _seq;
+    _currScan.header.frame_id = "toposens";
+    _currScan.height = 1;
+    _seq++;
     pcl::PointCloud<pcl::PointXYZI>::Ptr _cloud(new pcl::PointCloud<pcl::PointXYZI>);
     _cloud->header.stamp = pcl_conversions::toPCL(ros::Time::now());
     _cloud->header.frame_id = "test";
@@ -138,24 +159,9 @@ namespace topo
     _cloud->height = 1;
     _seq++;
 
-    // Need to transform the points.
-    // x = z, y = -x, z = -y;
+    _currScan.width = _currScan.points.size();
 
-
-    for(int i=0; i<_scan.size(); ++i)
-    {
-      pcl::PointXYZI pcl_point;
-      pcl_point.x = _scan[i].location.z;
-      pcl_point.y = -_scan[i].location.x;
-      pcl_point.z = -_scan[i].location.y;
-      pcl_point.intensity = _scan[i].intensity;
-
-      _cloud->points.push_back(pcl_point);
-    }
-
-    _cloud->width = _cloud->points.size();
-
-    pcl::toROSMsg(*_cloud, pclMsg);
+    pcl::toROSMsg(_currScan, pclMsg);
 
     _pubPcl.publish(pclMsg);
   }

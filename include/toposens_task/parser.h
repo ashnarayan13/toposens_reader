@@ -1,7 +1,6 @@
 
 #include <ros/ros.h>
 #include <string>
-#include "toposens_task/TPoint.h"
 #include<vector>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -25,10 +24,12 @@ namespace topo
 
       void publishPcl();
 
+      pcl::PointXYZI getConvertedPoint(const pcl::PointXYZI& currPoint);
+
       ros::Publisher _pubPcl;
       std::string _data;
       int _pos;
-      std::vector<toposens_task::TPoint> _scan;
+      pcl::PointCloud<pcl::PointXYZI> _currScan;
       unsigned long long _seq;
   };
 }
