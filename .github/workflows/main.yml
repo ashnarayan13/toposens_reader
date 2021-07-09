@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     
     
-  steps:
+    steps:
     - uses: ros-tooling/setup-ros@v0.2
       with:
         required-ros-distributions: noetic
