@@ -8,7 +8,14 @@ namespace topo
   UssParser::UssParser(ros::NodeHandle nh)
   {
     _pubPcl = nh.advertise<sensor_msgs::PointCloud2>("/topo/pointCloud", 1);
-    std::ifstream _file("/home/nomad/catkin_ros/src/toposens_task/data/data.txt");
+    std::string fileName;
+    nh.getParam("data_file", fileName);
+
+    if(fileName.empty())
+    {
+      ROS_WARN("No input file to read");
+    }
+    std::ifstream _file(fileName);
     char ch;
     while (_file >> ch)
     {
@@ -60,7 +67,7 @@ namespace topo
 
   void UssParser::parse(const std::string &frame)
   {
-    auto i = frame.begin();
+    std::string::const_iterator i = frame.begin();
 
     while (*i != 'S')
     if (++i == frame.end()) return;
@@ -106,7 +113,7 @@ namespace topo
     }
   }
 
-  float UssParser::_toNum(auto &i)
+  float UssParser::_toNum(std::string::const_iterator &i)
   {
     // Size of X, Y, Z, V data is always 5 bytes
     int abs = 0, factor = 1, length = 5;
@@ -131,6 +138,13 @@ namespace topo
 
   pcl::PointXYZI UssParser::getConvertedPoint(const pcl::PointXYZI& currPoint)
   {
+    // The coordinate frame for the USS is defined.
+    // USS coordinate frame -> front (+Z), right (+X)amd down (+Y)
+    // ROS coordinate frame -> front (+X), left(+Y) and up (+Z)
+    // Hence to map to the ROS coordinate frame.
+    // ROS (X) = USS (Z)
+    // ROS (Y) = USS (-X)
+    // ROS (Z) = USS (-Y)
     pcl::PointXYZI pcl_point;
     pcl_point.x = currPoint.z;
     pcl_point.y = -currPoint.x;
@@ -144,6 +158,7 @@ namespace topo
   {
     sensor_msgs::PointCloud2 pclMsg;
 
+    // Fill the header for the pointcloud.
     _currScan.header.stamp = pcl_conversions::toPCL(ros::Time::now());
     _currScan.header.seq = _seq;
     _currScan.header.frame_id = "toposens";
@@ -152,6 +167,7 @@ namespace topo
 
     _currScan.width = _currScan.points.size();
 
+    // Convert pointcloud object into ros pointcloud message.
     pcl::toROSMsg(_currScan, pclMsg);
 
     _pubPcl.publish(pclMsg);
