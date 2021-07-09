@@ -24,8 +24,8 @@ jobs:
   steps:
     - uses: ros-tooling/setup-ros@v0.2
       with:
-        required-ros-distributions: melodic
+        required-ros-distributions: noetic
     - uses: ros-tooling/action-ros-ci@v0.2
       with:
-        package-name: actions/checkout@v2
+        package-name: toposens_reader
         target-ros1-distro: noetic
