@@ -6,6 +6,9 @@
 
 namespace topo
 {
+  /// @brief Class to extract the euclidean clusters from the input pointcloud.
+  ///   Uses the PCL euclidean cluster extraction.
+  ///   Publishes a pole status flag if it detects an object in front of the sensor.
   class ClusterExtractor
   {
     public:
@@ -14,14 +17,16 @@ namespace topo
 
     private:
 
+      /// @brief The clusters are extracted from the input point cloud.
+      ///   A flag is published with status true if a cluster is found. False otherwise.
+      ///
+      /// @param[in] cloud - const reference to the subscribed point cloud.
       void inputCallback(const sensor_msgs::PointCloud2ConstPtr& cloud);
 
-      /** \brief The PCL implementation used. */
-      pcl::EuclideanClusterExtraction<pcl::PointXYZ> _impl;
+      pcl::EuclideanClusterExtraction<pcl::PointXYZ> _impl; /// The PCL implementation for euclidean cluster extraction.
 
-      /** \brief The input PointCloud subscriber. */
-      ros::Subscriber _sub_input;
+      ros::Subscriber _sub_input; /// The pointcloud subscriber.
 
-      ros::Publisher _pub;
+      ros::Publisher _pub; /// The publisher of the bool flag.
   };
 }
