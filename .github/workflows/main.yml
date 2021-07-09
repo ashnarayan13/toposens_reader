@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: ros-tooling/setup-ros@v0.2
         with:
-          required-ros-distributions: melodic
+          required-ros-distributions: noetic
       - uses: ros-tooling/action-ros-ci@v0.2
         with:
           package-name: toposens_task
