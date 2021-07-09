@@ -33,6 +33,7 @@ jobs:
           sudo rosdep init
           rosdep update
           mkdir -p ~/catkin_ws/src
+          ln -s $GITHUB_WORKSPACE ~/catkin_ws/src/toposens_reader
           cd ~/catkin_ws
           rosdep install --from-paths src --ignore-src -r -s  # do a dry-run first
           rosdep install --from-paths src --ignore-src -r -y
@@ -40,7 +41,6 @@ jobs:
         run: |
           source /opt/ros/$ROS_DISTRO/setup.bash
           cd ~/catkin_ws
-          ln -s $GITHUB_WORKSPACE ~/catkin_ws/src/toposens_reader
           ls
           cd ~/catkin_ws
           catkin_make
