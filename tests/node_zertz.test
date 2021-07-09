@@ -1,5 +1,6 @@
 <launch>
 
+  <param name="data_file" type="str" value="$(find toposens_task)/data/data.txt"/>
   <node pkg="toposens_task" type="toposens_task_node" name="toposens_task_node"/>
 
 
