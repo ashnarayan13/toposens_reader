@@ -11,9 +11,16 @@ namespace topo
     _pub = nh.advertise<std_msgs::Bool>("topo/poleStatus", 1);
     _sub_input = nh.subscribe("/topo/pointCloud", 1, &ClusterExtractor::inputCallback, this);
 
-    _impl.setClusterTolerance(1.0F);
-    _impl.setMinClusterSize(2);
-    _impl.setMaxClusterSize(5);
+    float clusterTolerance = 1.0F;
+    int minClusterSize = 2;
+    int maxClusterSize = 5;
+
+    nh.getParam("cluster_tolerance", clusterTolerance);
+    nh.getParam("min_cluster_size", minClusterSize);
+    nh.getParam("max_cluster_size", maxClusterSize);
+    _impl.setClusterTolerance(clusterTolerance);
+    _impl.setMinClusterSize(minClusterSize);
+    _impl.setMaxClusterSize(maxClusterSize);
   }
 
   void ClusterExtractor::inputCallback(const sensor_msgs::PointCloud2ConstPtr& cloud)
