@@ -1,0 +1,12 @@
+<launch>
+
+  <node pkg="toposens_task" type="toposens_task_node" name="toposens_task_node"/>
+
+
+  <test pkg="rostest" type="hztest" test-name="toposens_hertz_test">
+    <param name="topic" value="/topo/pointCloud" />
+    <param name="hz" value="20.0" />
+    <param name="hzerror" value="0.5" />
+    <param name="test_duration" value="5.0" />
+  </test>
+</launch>

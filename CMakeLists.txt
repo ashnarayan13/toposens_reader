@@ -214,3 +214,7 @@ target_link_libraries(${PROJECT_NAME}_cluster_node
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+if(CATKIN_ENABLE_TESTING)
+  add_subdirectory(tests)
+endif()
+
