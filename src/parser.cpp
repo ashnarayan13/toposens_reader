@@ -3,13 +3,10 @@
 #include <fstream>
 #include "pcl_conversions/pcl_conversions.h"
 
-static int temp;
 namespace topo
 {
   UssParser::UssParser(ros::NodeHandle nh)
   {
-    val = 0;
-    temp = 0;
     _pubPcl = nh.advertise<sensor_msgs::PointCloud2>("/topo/pointCloud", 1);
     std::ifstream _file("/home/nomad/catkin_ros/src/toposens_task/data/data.txt");
     char ch;
@@ -151,12 +148,6 @@ namespace topo
     _currScan.header.seq = _seq;
     _currScan.header.frame_id = "toposens";
     _currScan.height = 1;
-    _seq++;
-    pcl::PointCloud<pcl::PointXYZI>::Ptr _cloud(new pcl::PointCloud<pcl::PointXYZI>);
-    _cloud->header.stamp = pcl_conversions::toPCL(ros::Time::now());
-    _cloud->header.frame_id = "test";
-    _cloud->header.seq = _seq;
-    _cloud->height = 1;
     _seq++;
 
     _currScan.width = _currScan.points.size();

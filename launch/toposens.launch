@@ -1,0 +1,7 @@
+<launch>
+
+  <node pkg="toposens_task" type="toposens_task_node" name="toposens_task_node" output="screen" />
+
+  <node pkg="toposens_task" type="toposens_task_cluster_node" name="toposens_task_cluster_node" output="screen" />
+
+</launch>

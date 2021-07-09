@@ -7,7 +7,6 @@
 
 namespace topo
 {
-  static int val = 0;
   class UssParser
   {
     public:
