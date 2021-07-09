@@ -31,6 +31,7 @@ jobs:
         run: |
           source /opt/ros/$ROS_DISTRO/setup.bash          
           mkdir -p ~/catkin_ws/src
+          ln -s $GITHUB_WORKSPACE ~/catkin_ws/src/toposens_reader
           ls
           cd ~/catkin_ws
           catkin_make
