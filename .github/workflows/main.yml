@@ -29,7 +29,9 @@ jobs:
             source /opt/ros/$ROS_DISTRO/setup.bash
       - name: catkin build
         run: |
-          source /opt/ros/$ROS_DISTRO/setup.bash
+          source /opt/ros/$ROS_DISTRO/setup.bash          
+          mkdir -p ~/catkin_ws/src
+          ls
           cd ~/catkin_ws
           catkin_make
           source devel/setup.bash
