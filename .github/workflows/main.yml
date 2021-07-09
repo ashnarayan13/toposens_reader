@@ -27,10 +27,19 @@ jobs:
             sudo apt-get install -y ros-cmake-modules
             sudo apt-get install -y ros-$ROS_DISTRO-catkin
             source /opt/ros/$ROS_DISTRO/setup.bash
+      - name: Install ROS packages with rosdep
+        run: |
+          source /opt/ros/$ROS_DISTRO/setup.bash
+          sudo rosdep init
+          rosdep update
+          mkdir -p ~/catkin_ws/src
+          cd ~/catkin_ws
+          rosdep install --from-paths src --ignore-src -r -s  # do a dry-run first
+          rosdep install --from-paths src --ignore-src -r -y
       - name: catkin build
         run: |
-          source /opt/ros/$ROS_DISTRO/setup.bash          
-          mkdir -p ~/catkin_ws/src
+          source /opt/ros/$ROS_DISTRO/setup.bash
+          cd ~/catkin_ws
           ln -s $GITHUB_WORKSPACE ~/catkin_ws/src/toposens_reader
           ls
           cd ~/catkin_ws
