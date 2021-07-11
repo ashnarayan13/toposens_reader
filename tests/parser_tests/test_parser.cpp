@@ -77,7 +77,7 @@ TEST_F(TestParser, TestSingleFrameFailureNoS)
   EXPECT_EQ(1U, ussParser.getErrors().size());
 }
 
-TEST_F(TestParser, TestSingleFrameFailureNoX)
+TEST_F(TestParser, TestSingleFrameNoFailureMissingX)
 {
   ros::NodeHandle nh;
 
@@ -90,7 +90,30 @@ TEST_F(TestParser, TestSingleFrameFailureNoX)
   std::string file = "test.txt";
   topo::UssParser ussParser(nh, file);
   EXPECT_FALSE(ussParser.readAndPublishFrame());
-  EXPECT_EQ(1U, ussParser.getErrors().size());
+  EXPECT_EQ(0U, ussParser.getErrors().size());
+
+  // Until we find a X we will keep searching.
+  // So only case where FrameMissingX is possible is if we miss X in the full frame.
+}
+
+TEST_F(TestParser, TestingFailureForX)
+{
+  ros::NodeHandle nh;
+
+  // Create test data!
+  std::string data = "S000000P0000500083Y-0020Z00986V00031P0000600130Y00526Z00966V00018P0000900269Y01835Z01518V00029P00002-1825Y-2501Z01996V00072E";
+  std::ofstream writeFile("test.txt");
+  writeFile << data;
+  writeFile.close();
+
+  std::string file = "test.txt";
+  topo::UssParser ussParser(nh, file);
+  EXPECT_FALSE(ussParser.readAndPublishFrame());
+
+  // No errors!
+  const std::vector<topo::InternalErrors>& res = ussParser.getErrors();
+  EXPECT_EQ(1, res.size());
+
   bool expectX = false;
   for(int i=0; i<ussParser.getErrors().size(); ++i)
   {
