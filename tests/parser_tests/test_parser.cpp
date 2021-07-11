@@ -28,7 +28,6 @@ class TestParser : public ::testing::Test
     {
       std::string frameId = cloud->header.frame_id;
       EXPECT_EQ(frameId, "toposens");
-      EXPECT_EQ(cloud->width, 4);
     }
     ros::Subscriber sub_;
 };
@@ -75,6 +74,111 @@ TEST_F(TestParser, TestSingleFrameFailureNoS)
   std::string file = "test.txt";
   topo::UssParser ussParser(nh, file);
   EXPECT_FALSE(ussParser.readAndPublishFrame());
+  EXPECT_EQ(1U, ussParser.getErrors().size());
+}
+
+TEST_F(TestParser, TestSingleFrameFailureNoX)
+{
+  ros::NodeHandle nh;
+
+  // Create test data!
+  std::string data = "S000000P0000X00083Y-0020Z00986V00031P0000500130Y00526Z00966V00018P0000X00269Y01835Z01518V00029P0000X-1825Y-2501Z01996V00072E";
+  std::ofstream writeFile("test.txt");
+  writeFile << data;
+  writeFile.close();
+
+  std::string file = "test.txt";
+  topo::UssParser ussParser(nh, file);
+  EXPECT_FALSE(ussParser.readAndPublishFrame());
+  EXPECT_EQ(1U, ussParser.getErrors().size());
+  bool expectX = false;
+  for(int i=0; i<ussParser.getErrors().size(); ++i)
+  {
+    if(ussParser.getErrors().at(i) == topo::FrameMissingX)
+    {
+      expectX = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(expectX);
+}
+
+TEST_F(TestParser, TestSingleFrameFailureNoY)
+{
+  ros::NodeHandle nh;
+
+  // Create test data!
+  std::string data = "S000000P0000X00083Y-0020Z00986V00031P0000X00130500526Z00966V00018P0000X00269Y01835Z01518V00029P0000X-1825Y-2501Z01996V00072E";
+  std::ofstream writeFile("test.txt");
+  writeFile << data;
+  writeFile.close();
+
+  std::string file = "test.txt";
+  topo::UssParser ussParser(nh, file);
+  EXPECT_FALSE(ussParser.readAndPublishFrame());
+  EXPECT_EQ(1U, ussParser.getErrors().size());bool expectX = false;
+  bool expectY = false;
+  for(int i=0; i<ussParser.getErrors().size(); ++i)
+  {
+    if(ussParser.getErrors().at(i) == topo::FrameMissingY)
+    {
+      expectY = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(expectY);
+}
+
+TEST_F(TestParser, TestSingleFrameFailureNoZ)
+{
+  ros::NodeHandle nh;
+
+  // Create test data!
+  std::string data = "S000000P0000X00083Y-0020Z00986V00031P0000X00130Y00526Z00966V00018P0000X00269Y01835Z01518V00029P0000X-1825Y-2501801996V00072E";
+  std::ofstream writeFile("test.txt");
+  writeFile << data;
+  writeFile.close();
+
+  std::string file = "test.txt";
+  topo::UssParser ussParser(nh, file);
+  EXPECT_FALSE(ussParser.readAndPublishFrame());
+  EXPECT_EQ(1U, ussParser.getErrors().size());bool expectX = false;
+  bool expectZ = false;
+  for(int i=0; i<ussParser.getErrors().size(); ++i)
+  {
+    if(ussParser.getErrors().at(i) == topo::FrameMissingZ)
+    {
+      expectZ = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(expectZ);
+}
+
+TEST_F(TestParser, TestSingleFrameFailureNoV)
+{
+  ros::NodeHandle nh;
+
+  // Create test data!
+  std::string data = "S000000P0000X00083Y-0020Z00986V00031P0000X00130Y00526Z00966V00018P0000X00269Y01835Z01518V00029P0000X-1825Y-2501Z01996500072E";
+  std::ofstream writeFile("test.txt");
+  writeFile << data;
+  writeFile.close();
+
+  std::string file = "test.txt";
+  topo::UssParser ussParser(nh, file);
+  EXPECT_FALSE(ussParser.readAndPublishFrame());
+  EXPECT_EQ(1U, ussParser.getErrors().size());bool expectX = false;
+  bool expectV = false;
+  for(int i=0; i<ussParser.getErrors().size(); ++i)
+  {
+    if(ussParser.getErrors().at(i) == topo::FrameMissingV)
+    {
+      expectV = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(expectV);
 }
 
 int main(int argc, char** argv) {
