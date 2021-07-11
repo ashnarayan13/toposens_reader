@@ -44,4 +44,5 @@ jobs:
           ls
           cd ~/catkin_ws
           catkin_make run_tests
+          catkin_test_results --verbose
           source devel/setup.bash
