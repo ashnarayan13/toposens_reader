@@ -36,7 +36,7 @@ namespace topo
     std_msgs::Bool msg;
     if(clusters.size() > 0)
     {
-      ROS_INFO("Cluster size %ld", clusters.size());
+      ROS_INFO("Pole found");
       for(int i=0; i<clusters.size(); ++i)
       {
         for(int j=0; j<clusters[i].indices.size(); ++j)
@@ -66,7 +66,7 @@ namespace topo
     else
     {
       msg.data = false;
-      ROS_INFO("NO CLUSTERS FOUND!");
+      ROS_INFO("NO pole found!");
     }
 
 
