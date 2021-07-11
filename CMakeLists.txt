@@ -44,40 +44,28 @@ include_directories(
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/toposens_task.cpp
-# )
+add_library(topo_parser
+  src/parser.cpp
+)
 
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-## Declare a C++ executable
-## With catkin_make all packages are built within a single CMake context
-## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node src/publish_node.cpp src/parser.cpp)
-
-## Rename C++ executable without prefix
-## The above recommended prefix causes long target names, the following renames the
-## target back to the shorter version for ease of user use
-## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
-# set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
-
-## Add cmake target dependencies of the executable
-## same as for the library above
-# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}_node
-  ${catkin_LIBRARIES}
-#  ${PCL_LIBRARIES}
+add_library(topo_cluster
+  src/cluster_extraction.cpp
 )
 
 
-add_executable(${PROJECT_NAME}_cluster_node src/publish_cluster_node.cpp src/cluster_extraction.cpp)
+# Executable to parse the data file and publish pcl pointcloud
+add_executable(${PROJECT_NAME}_node src/publish_node.cpp)
+target_link_libraries(${PROJECT_NAME}_node
+  ${catkin_LIBRARIES}
+  topo_parser
+#  ${PCL_LIBRARIES}
+)
+
+# Executable to read pcl pointcloud and publish pole status
+add_executable(${PROJECT_NAME}_cluster_node src/publish_cluster_node.cpp)
 target_link_libraries(${PROJECT_NAME}_cluster_node
   ${catkin_LIBRARIES}
+  topo_cluster
 #  ${PCL_LIBRARIES}
 )
 
