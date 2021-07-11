@@ -64,6 +64,8 @@
   <depend>pcl_conversions</depend>
 
 
+  <test_depend>roslaunch</test_depend>
+  <test_depend>rostest</test_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

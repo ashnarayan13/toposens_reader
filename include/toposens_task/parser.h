@@ -7,16 +7,31 @@
 
 namespace topo
 {
+
+  enum InternalErrors
+  {
+    DataFileEmpty,
+    FrameMissingS,
+    FrameMissingE,
+    FrameMissingX,
+    FrameMissingY,
+    FrameMissingZ,
+    FrameMissingV,
+    PointInvalid
+  };
+
   /// @brief Class for reading a data file and publishing the pointcloud message
   class UssParser
   {
     public:
 
-      UssParser(ros::NodeHandle nh);
+      UssParser(ros::NodeHandle nh, const std::string& fileName);
       ~UssParser() {}
 
       /// @brief Reads the _data string frame by frame and publishes the pointcloud.
       bool readAndPublishFrame();
+
+      const std::vector<InternalErrors> getErrors() const;
 
     private:
 
@@ -46,5 +61,7 @@ namespace topo
       int _pos; /// The position of the index in the _data.
       pcl::PointCloud<pcl::PointXYZI> _currScan; /// The point cloud object that is published.
       unsigned long long _seq; /// To store the current sequence number.
+
+      std::vector<InternalErrors> _errors;
   };
 }

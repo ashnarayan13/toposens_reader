@@ -5,11 +5,9 @@
 
 namespace topo
 {
-  UssParser::UssParser(ros::NodeHandle nh)
+  UssParser::UssParser(ros::NodeHandle nh, const std::string& fileName)
   {
     _pubPcl = nh.advertise<sensor_msgs::PointCloud2>("/topo/pointCloud", 1);
-    std::string fileName;
-    nh.getParam("data_file", fileName);
 
     if(fileName.empty())
     {
@@ -27,15 +25,25 @@ namespace topo
   bool UssParser::readAndPublishFrame()
   {
     _currScan.clear();
+    _errors.clear();
+
+    if(_data.empty())
+    {
+      _errors.push_back(DataFileEmpty);
+      return false;
+    }
 
     std::string frame;
     frame.clear();
     bool toPush = false;
+    bool foundS = false;
+    bool foundE = false;
     for(int i=_pos; i<_data.size(); ++i)
     {
       if(_data[i] == 'S')
       {
         toPush = true;
+        foundS = true;
         // New frame
       }
       if(toPush)
@@ -45,9 +53,21 @@ namespace topo
       if(_data[i] == 'E')
       {
         toPush = false;
+        foundE = true;
         _pos = i+1;
         break;
       }
+    }
+
+    if(foundS && !foundE)
+    {
+      // Missing end. Don't parse
+      _errors.push_back(FrameMissingE);
+    }
+    if(frame.empty())
+    {
+      // No S found
+      _errors.push_back(FrameMissingS);
     }
 
     parse(frame);
@@ -69,46 +89,83 @@ namespace topo
   {
     std::string::const_iterator i = frame.begin();
 
-    while (*i != 'S')
-    if (++i == frame.end()) return;
 
-
+    bool addedPoint = false;
     for (i; i < frame.end(); ++i)
     {
       // Find next X-tag in the frame
       while (*i != 'X')
-        if (++i == frame.end()) return;
-
-      try
       {
-        pcl::PointXYZI pcl_point;
-        pcl_point.x = _toNum(++i) / 1000.0;
-
-        if (*(++i) == 'Y')
-          pcl_point.y = _toNum(++i) / 1000.0;
-        else
-          throw std::invalid_argument("Expected Y-tag not found");
-
-        if (*(++i) == 'Z')
-          pcl_point.z = _toNum(++i) / 1000.0;
-        else
-          throw std::invalid_argument("Expected Z-tag not found");
-
-        if (*(++i) == 'V')
-          pcl_point.intensity = _toNum(++i) / 100.0;
-        else
-          throw std::invalid_argument("Expected V-tag not found");
-
-        if (pcl_point.intensity > 0)
+        if(*i == 'E')
         {
-          // Conversion to correct coordinate frame
-          _currScan.points.push_back(getConvertedPoint(pcl_point));
+          if(addedPoint)
+          {
+            // Do nothing. Will return.
+          }
+          else
+          {
+            // No X found.
+            _errors.push_back(FrameMissingX);
+          }
+          return;
+          // Do nothing. 
         } 
+        if (++i == frame.end())
+        {
+          // No X found.
+          _errors.push_back(FrameMissingX);
+          return;
+        }
       }
-      catch (const std::exception &e)
+
+      pcl::PointXYZI pcl_point;
+      addedPoint = false;
+      pcl_point.x = _toNum(++i) / 1000.0;
+
+      if (*(++i) == 'Y')
       {
-        ROS_INFO("Skipped invalid point in stream");
-        ROS_DEBUG("Error: %s in message %s", e.what(), frame.c_str());
+        pcl_point.y = _toNum(++i) / 1000.0;
+      }
+      else
+      {
+        // No Y found
+        _errors.push_back(FrameMissingY);
+        return;
+      }
+
+      if (*(++i) == 'Z')
+      {
+        pcl_point.z = _toNum(++i) / 1000.0;
+      }
+      else
+      {
+        // No Z found
+        _errors.push_back(FrameMissingZ);
+        return;
+      }
+
+      if (*(++i) == 'V')
+      {
+        pcl_point.intensity = _toNum(++i) / 100.0;
+      }
+      else
+      {
+        // No V found
+        _errors.push_back(FrameMissingV);
+        return;
+      }
+
+      if (pcl_point.intensity > 0)
+      {
+        // Conversion to correct coordinate frame
+        _currScan.points.push_back(getConvertedPoint(pcl_point));
+        addedPoint = true;
+      }
+      else
+      {
+        // Point is not valid
+        _errors.push_back(PointInvalid);
+        return;
       }
     }
   }
@@ -171,5 +228,10 @@ namespace topo
     pcl::toROSMsg(_currScan, pclMsg);
 
     _pubPcl.publish(pclMsg);
+  }
+
+  const std::vector<InternalErrors> UssParser::getErrors() const
+  {
+    return _errors;
   }
 }
