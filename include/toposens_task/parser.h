@@ -12,7 +12,7 @@ namespace topo
   {
     public:
 
-      UssParser(ros::NodeHandle nh);
+      UssParser(ros::NodeHandle nh, const std::string& fileName);
       ~UssParser() {}
 
       /// @brief Reads the _data string frame by frame and publishes the pointcloud.

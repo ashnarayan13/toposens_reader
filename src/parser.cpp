@@ -5,7 +5,7 @@
 
 namespace topo
 {
-  UssParser::UssParser(ros::NodeHandle nh)
+  UssParser::UssParser(ros::NodeHandle nh, const std::string& fileName)
   {
     _pubPcl = nh.advertise<sensor_msgs::PointCloud2>("/topo/pointCloud", 1);
     std::string fileName;
