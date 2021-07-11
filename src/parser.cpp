@@ -90,6 +90,7 @@ namespace topo
     std::string::const_iterator i = frame.begin();
 
 
+    bool addedPoint = false;
     for (i; i < frame.end(); ++i)
     {
       // Find next X-tag in the frame
@@ -97,6 +98,16 @@ namespace topo
       {
         if(*i == 'E')
         {
+          if(addedPoint)
+          {
+            // Do nothing. Will return.
+          }
+          else
+          {
+            // No X found.
+            _errors.push_back(FrameMissingX);
+          }
+          return;
           // Do nothing. 
         } 
         if (++i == frame.end())
@@ -108,6 +119,7 @@ namespace topo
       }
 
       pcl::PointXYZI pcl_point;
+      addedPoint = false;
       pcl_point.x = _toNum(++i) / 1000.0;
 
       if (*(++i) == 'Y')
@@ -147,6 +159,7 @@ namespace topo
       {
         // Conversion to correct coordinate frame
         _currScan.points.push_back(getConvertedPoint(pcl_point));
+        addedPoint = true;
       }
       else
       {
