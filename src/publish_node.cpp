@@ -6,9 +6,13 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "toposens_publish_node");
 
   ros::NodeHandle nh;
+
+  std::string fileName;
+  nh.getParam("data_file", fileName);
+
   ros::Rate loop_rate(20);  // 20 Hz
 
-  topo::UssParser parserObj(nh);
+  topo::UssParser parserObj(nh, fileName);
 
   while (parserObj.readAndPublishFrame())
   {
