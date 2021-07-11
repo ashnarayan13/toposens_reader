@@ -20,6 +20,7 @@ namespace topo
      _data += ch; // Or whatever
     }
     _pos = 0;
+    _seq = 1;
   }
 
   bool UssParser::readAndPublishFrame()

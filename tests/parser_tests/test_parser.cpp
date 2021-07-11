@@ -28,12 +28,19 @@ class TestParser : public ::testing::Test
     {
       std::string frameId = cloud->header.frame_id;
       EXPECT_EQ(frameId, "toposens");
+      EXPECT_EQ(cloud->header.seq, 1U);
+      EXPECT_EQ(cloud->width, expectedPts_);
     }
-    ros::Subscriber sub_;
+    ros::Subscriber sub_; // Subscribe to the point cloud message.
+    int expectedPts_; // Expected number of points published in the pointcloud.
 };
 
+
+/// @brief Test behavior when file is empty to read.
+///   Expect that parser works but no data is published.
 TEST_F(TestParser, TestEmptyFile)
 {
+  expectedPts_ = 0;
   EXPECT_TRUE(true);
   ros::NodeHandle nh;
   std::string file = "";
@@ -42,9 +49,14 @@ TEST_F(TestParser, TestEmptyFile)
 
 }
 
+
+/// @brief Test behavior where a single valid frame is provided.
+///   Expect 0 errors in the error queue.
+///   Message published successfully.
 TEST_F(TestParser, TestSingleFrame)
 {
   ros::NodeHandle nh;
+  expectedPts_ = 4;
 
   // Create test data!
   std::string data = "S000000P0000X00083Y-0020Z00986V00031P0000X00130Y00526Z00966V00018P0000X00269Y01835Z01518V00029P0000X-1825Y-2501Z01996V00072E";
@@ -61,9 +73,12 @@ TEST_F(TestParser, TestSingleFrame)
   EXPECT_EQ(0, res.size());
 }
 
+/// @brief Test single frame where the start character S is missing.
+///   Expect error for not finding S.
 TEST_F(TestParser, TestSingleFrameFailureNoS)
 {
   ros::NodeHandle nh;
+  expectedPts_ = 0;
 
   // Create test data!
   std::string data = "000000P0000X00083Y-0020Z00986V00031P0000X00130Y00526Z00966V00018P0000X00269Y01835Z01518V00029P0000X-1825Y-2501Z01996V00072E";
@@ -75,11 +90,24 @@ TEST_F(TestParser, TestSingleFrameFailureNoS)
   topo::UssParser ussParser(nh, file);
   EXPECT_FALSE(ussParser.readAndPublishFrame());
   EXPECT_EQ(1U, ussParser.getErrors().size());
+  bool expectS = false;
+  for(int i=0; i<ussParser.getErrors().size(); ++i)
+  {
+    if(ussParser.getErrors().at(i) == topo::FrameMissingS)
+    {
+      expectS = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(expectS);
 }
 
+/// @brief Frame with X missing for 1 point.
+///   No error is generated. Since 3 valid points are availble.
 TEST_F(TestParser, TestSingleFrameNoFailureMissingX)
 {
   ros::NodeHandle nh;
+  expectedPts_ = 3;
 
   // Create test data!
   std::string data = "S000000P0000X00083Y-0020Z00986V00031P0000500130Y00526Z00966V00018P0000X00269Y01835Z01518V00029P0000X-1825Y-2501Z01996V00072E";
@@ -96,9 +124,12 @@ TEST_F(TestParser, TestSingleFrameNoFailureMissingX)
   // So only case where FrameMissingX is possible is if we miss X in the full frame.
 }
 
+/// @brief Frame with no X in any point. 
+///   Expect error FrameMissingX and no points.
 TEST_F(TestParser, TestingFailureForX)
 {
   ros::NodeHandle nh;
+  expectedPts_ = 0;
 
   // Create test data!
   std::string data = "S000000P0000500083Y-0020Z00986V00031P0000600130Y00526Z00966V00018P0000900269Y01835Z01518V00029P00002-1825Y-2501Z01996V00072E";
@@ -110,7 +141,6 @@ TEST_F(TestParser, TestingFailureForX)
   topo::UssParser ussParser(nh, file);
   EXPECT_FALSE(ussParser.readAndPublishFrame());
 
-  // No errors!
   const std::vector<topo::InternalErrors>& res = ussParser.getErrors();
   EXPECT_EQ(1, res.size());
 
@@ -126,6 +156,8 @@ TEST_F(TestParser, TestingFailureForX)
   EXPECT_TRUE(expectX);
 }
 
+/// @brief Frame with missing Y in one point. 
+///   Expect error FrameMissingY and 3 points published.
 TEST_F(TestParser, TestSingleFrameFailureNoY)
 {
   ros::NodeHandle nh;
@@ -152,6 +184,8 @@ TEST_F(TestParser, TestSingleFrameFailureNoY)
   EXPECT_TRUE(expectY);
 }
 
+/// @brief Frame with missing Z in one point. 
+///   Expect error FrameMissingZ and 3 points published.
 TEST_F(TestParser, TestSingleFrameFailureNoZ)
 {
   ros::NodeHandle nh;
@@ -178,6 +212,8 @@ TEST_F(TestParser, TestSingleFrameFailureNoZ)
   EXPECT_TRUE(expectZ);
 }
 
+/// @brief Frame with missing V in one point. 
+///   Expect error FrameMissingV and 3 points published.
 TEST_F(TestParser, TestSingleFrameFailureNoV)
 {
   ros::NodeHandle nh;

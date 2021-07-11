@@ -9,4 +9,6 @@
   <node pkg="toposens_task" type="toposens_task_cluster_node" name="toposens_task_cluster_node" output="screen">
   </node>
 
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find toposens_task)/rviz/toposens_rviz.rviz" />
+
 </launch>
