@@ -28,8 +28,8 @@ class TestParser : public ::testing::Test
     {
       std::string frameId = cloud->header.frame_id;
       EXPECT_EQ(frameId, "toposens");
-      EXPECT_EQ(cloud->header.seq, 1U);
       EXPECT_EQ(cloud->width, expectedPts_);
+      EXPECT_EQ(cloud->height, 1);
     }
     ros::Subscriber sub_; // Subscribe to the point cloud message.
     int expectedPts_; // Expected number of points published in the pointcloud.
